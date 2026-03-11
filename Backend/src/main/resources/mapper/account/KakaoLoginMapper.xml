@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.wikibook.backend.account.mapper.KakaoLoginMapper">
+    <select id="getKaKaoUserLoginId" resultType="string">
+        SELECT
+            ID
+        FROM members
+        WHERE OAUTH_PROVIDER = 'kakao' AND OAUTH_ID = #{kakaoId}
+    </select>
+
+    <insert id="joinWithKakao" parameterType="kr.co.wikibook.backend.member.model.Members">
+        INSERT INTO members (
+            NAME,
+            LOGIN_ID,
+            LOGIN_PW,
+            MANAGER,
+            OAUTH_PROVIDER,
+            OAUTH_ID
+        )
+        VALUES
+        (
+            #{name},
+            #{loginId},
+            #{loginPw},
+            #{manager},
+            #{oauthProvider},
+            #{oauthId}
+        )
+    </insert>
+</mapper>

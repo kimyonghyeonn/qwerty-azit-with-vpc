@@ -1,0 +1,83 @@
+name: Deploy Private Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Backend/**"
+      - ".github/workflows/deploy-private-backend.yml"
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET: qwerty-azit-codedeploy-artifacts
+  S3_PREFIX: backend
+  CODEDEPLOY_APP: Qwerty-Azit-Deploy
+  CODEDEPLOY_GROUP: Backend-WAS
+  DEPLOY_PACKAGE: backend-${{ github.sha }}.zip
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x Backend/gradlew
+
+      - name: Grant execute permission for deploy scripts
+        run: chmod +x Backend/scripts/*.sh
+
+      - name: Build backend jar
+        run: |
+          cd Backend
+          ./gradlew clean bootJar -x test
+
+      - name: Prepare deployment bundle
+        run: |
+          rm -rf deploy
+          mkdir -p deploy/build/libs
+
+          JAR_FILE=$(find Backend/build/libs -maxdepth 1 -name "*.jar" | head -n 1)
+          cp "$JAR_FILE" deploy/build/libs/app.jar
+          cp Backend/appspec.yml deploy/appspec.yml
+          cp -r Backend/scripts deploy/scripts
+
+          cd deploy
+          zip -r ../${DEPLOY_PACKAGE} .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload bundle to S3
+        run: |
+          aws s3 cp ${DEPLOY_PACKAGE} s3://${S3_BUCKET}/${S3_PREFIX}/${DEPLOY_PACKAGE}
+
+      - name: Register application revision
+        run: |
+          aws deploy register-application-revision \
+            --application-name ${CODEDEPLOY_APP} \
+            --s3-location bucket=${S3_BUCKET},key=${S3_PREFIX}/${DEPLOY_PACKAGE},bundleType=zip
+
+      - name: Create deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name ${CODEDEPLOY_APP} \
+            --deployment-group-name ${CODEDEPLOY_GROUP} \
+            --deployment-config-name CodeDeployDefault.OneAtATime \
+            --s3-location bucket=${S3_BUCKET},key=${S3_PREFIX}/${DEPLOY_PACKAGE},bundleType=zip
