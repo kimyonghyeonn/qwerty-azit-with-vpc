@@ -25,6 +25,8 @@ import './theme/variables.css';
 import './assets/global.css';
 
 import { createPinia } from 'pinia';
+
+import "./theme/global.css";
 const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPersistedstate); // ✅ 플러그인 적용
