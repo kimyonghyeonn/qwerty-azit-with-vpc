@@ -13,6 +13,31 @@ ion-content {
   color: #000000;
 }
 
+/* 헤더 */
+ion-header ion-toolbar {
+  --background: #ffffff;
+  --color: #000000;
+  --border-color: #dddddd;
+}
+
+ion-header ion-title,
+ion-header ion-menu-button {
+  color: #000000;
+}
+
+/* 푸터 / 탭바 */
+ion-tab-bar {
+  --background: #ffffff;
+  --color: #666666;
+  --color-selected: #3880ff;
+  border-top: 1px solid #dddddd;
+}
+
+ion-tab-button {
+  --color: #666666;
+  --color-selected: #3880ff;
+}
+
 /* ===== 다크모드 ===== */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -27,5 +52,30 @@ ion-content {
     background: #000000;
     --background: #000000;
     color: #ffffff;
+  }
+
+  /* 헤더 */
+  ion-header ion-toolbar {
+    --background: #000000;
+    --color: #ffffff;
+    --border-color: #333333;
+  }
+
+  ion-header ion-title,
+  ion-header ion-menu-button {
+    color: #ffffff;
+  }
+
+  /* 푸터 / 탭바 */
+  ion-tab-bar {
+    --background: #000000;
+    --color: #aaaaaa;
+    --color-selected: #4da3ff;
+    border-top: 1px solid #333333;
+  }
+
+  ion-tab-button {
+    --color: #aaaaaa;
+    --color-selected: #4da3ff;
   }
 }
